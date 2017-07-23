@@ -20,6 +20,18 @@ abstract class LoadDataCommand extends Command
         $this->data_types = collect();
     }
 
+    /**
+     * Add a class to the data loader
+     *
+     * @param string       $class Class name of the class
+     * @param string|array $keys  Key or keys to use as the unique key
+     *
+     * @return void
+     */
+    public function addDataClass($class, $keys)
+    {
+        $this->data_types->put($class, $keys);
+    }
 
     /**
      * Load the data

@@ -43,7 +43,7 @@ abstract class LoadDataCommand extends Command
      * @throws \Exception
      * @return void
      */
-    private function loadData($class, $data)
+    public function loadData($class, $data)
     {
         if (!$this->data_types->has($class)) {
             throw new \Exception(sprintf('You must first define a datatatype for %s', $class));

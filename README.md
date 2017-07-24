@@ -2,7 +2,7 @@
 # Laravel Data Loader
 ------
 
-Database seeders are awesome for loading up your database with test data, but what aboutr when you need to load **real** data into your database across environments?
+Database seeders are awesome for loading up your database with test data, but what about when you need to load **real** data into your database across environments?
 
 You could always load that data in with migrations... but then you have to manage DB dependencies, which can get messy with relational databases, especially when doing rollbacks and resets. Plus, thats not really where they should be, and if you are using TDD (which you should be) that is not where you want them - since you probably want to create the data in your tests.
  
@@ -44,8 +44,13 @@ You could always load that data in with migrations... but then you have to manag
 ```
 Each data class take the model class you will be loading in, and the column, or columns you want to match on. Under the hood we are doing an ```updateOrCreate``` and the data from the column(s) will be used as the $attributes sent to the method.   
 
+You can use an array for a multi dimensional unique key, ie:
+```php
+$this->addDataClass(MultiDimensionalKeyClass::class, ['key_part_1', 'Key_part_2']);
+```
+
 5\. Load the data
- ```
+ ```php
  public function handle()
  {
     $this->loadData(MyModelName::class, [

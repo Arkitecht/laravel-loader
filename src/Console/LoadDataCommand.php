@@ -41,7 +41,7 @@ abstract class LoadDataCommand extends Command
      * @param array  $data  The data (as if calling Class::create())
      *
      * @throws \Exception
-     * @return void
+     * @return mixed
      */
     public function loadData($class, $data)
     {

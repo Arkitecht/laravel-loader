@@ -64,6 +64,6 @@ abstract class LoadDataCommand extends Command
             $updateCheck[ $dataKey ] = $data[ $dataKey ];
         }
 
-        $class::updateOrCreate($updateCheck, $data);
+        return $class::updateOrCreate($updateCheck, $data);
     }
 }

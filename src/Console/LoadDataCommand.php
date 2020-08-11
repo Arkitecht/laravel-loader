@@ -3,10 +3,12 @@
 namespace Arkitecht\LaravelLoader\Console;
 
 use Illuminate\Console\Command;
+use Symfony\Component\Console\Input\InputOption;
 
 abstract class LoadDataCommand extends Command
 {
     private $data_types;
+    private $loaders;
 
     /**
      * Create a new command instance.
@@ -18,6 +20,9 @@ abstract class LoadDataCommand extends Command
         parent::__construct();
 
         $this->data_types = collect();
+        $this->loaders = collect();
+        $loaderOption = new InputOption('loader', 'L', InputOption::VALUE_OPTIONAL, 'Run the specified loader');
+        $this->getDefinition()->addOption($loaderOption);
     }
 
     /**
@@ -40,8 +45,8 @@ abstract class LoadDataCommand extends Command
      * @param string $class Class name
      * @param array  $data  The data (as if calling Class::create())
      *
-     * @throws \Exception
      * @return mixed
+     * @throws \Exception
      */
     public function loadData($class, $data)
     {
@@ -66,4 +71,52 @@ abstract class LoadDataCommand extends Command
 
         return $class::updateOrCreate($updateCheck, $data);
     }
+
+    /**
+     * Add a dataloader into the loaders collection
+     *
+     * @param $key
+     * @param $function
+     */
+    public function addLoader($key, $function)
+    {
+        $this->loaders->put($key, $function);
+    }
+
+    /**
+     * Default handler which processes all loaders, or specified loader
+     */
+    public function handle()
+    {
+        $this->loaders->each(function ($loader, $loaderKey) {
+            if (!$this->option('loader') || $this->option('loader') == $loaderKey) {
+                if (is_object($loader) && ($loader instanceof \Closure)) {
+                    $loader->call($this);
+                } else {
+                    $this->$loader();
+                }
+            }
+        });
+    }
+
+    /**
+     * Get the current data classes
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getDataClasses()
+    {
+        return $this->data_types;
+    }
+
+    /**
+     * Get the current data loaders
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getLoaders()
+    {
+        return $this->loaders;
+    }
+
 }

@@ -48,7 +48,7 @@ abstract class LoadDataCommand extends Command
      * @return mixed
      * @throws \Exception
      */
-    public function loadData($class, $data)
+    public function loadData($class, $data, $original = null)
     {
         if (!$this->data_types->has($class)) {
             throw new \Exception(sprintf('You must first define a datatatype for %s', $class));
@@ -67,6 +67,22 @@ abstract class LoadDataCommand extends Command
                 throw new \Exception(sprintf('You must provide a %s field in the data for datatatype for %s', $dataKey, $class));
             }
             $updateCheck[ $dataKey ] = $data[ $dataKey ];
+        }
+
+        if ($original) {
+            if (!is_array($original)) {
+                $original = [$original];
+            }
+
+            $query = $class::query();
+            foreach ($dataKeys as $idx => $dataKey) {
+                $query->where($dataKey, $original[ $idx ]);
+            }
+            $existing = $query->first();
+
+            if ($existing) {
+                $existing->update($updateCheck);
+            }
         }
 
         return $class::updateOrCreate($updateCheck, $data);

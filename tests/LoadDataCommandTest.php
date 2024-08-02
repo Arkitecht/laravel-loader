@@ -171,6 +171,32 @@ class LoadDataCommandTest extends TestCase
 
     }
 
+    /** @test */
+    function loader_loads_keyless_data()
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/database');
+
+        SampleKeylessClass::create([
+            'name' => 'Original',
+        ]);
+
+        SampleKeylessClass::create([
+            'name' => 'Stays the Same',
+        ]);
+
+
+        $this->assertEquals(2, SampleKeylessClass::count());
+        $this->assertEquals('Original', SampleKeylessClass::first()->name);
+        $this->assertEquals('Stays the Same', SampleKeylessClass::skip(1)->first()->name);
+
+        $this->runCommand(TestLoader::class, 'data:load', []);
+
+
+        $this->assertEquals(2, SampleKeylessClass::count());
+        $this->assertEquals('Updated', SampleKeylessClass::first()->name);
+        $this->assertEquals('Stays the Same', SampleKeylessClass::skip(1)->first()->name);
+    }
+
     private function loadSomeSamples()
     {
         $this->loadData(SampleClass::class, [
@@ -237,11 +263,12 @@ class TestLoader extends LoadDataCommand
 
         $this->addDataClass(SampleClass::class, 'key');
         $this->addDataClass(SampleComplexKeyClass::class, ['key', 'database']);
+        $this->addDataClass(SampleKeylessClass::class, 'name');
     }
 
     public function handle()
     {
-        $this->addLoader('samples', 'loadSomeSamples');
+       /* $this->addLoader('samples', 'loadSomeSamples');
         $this->addLoader('complex-samples', function () {
             $this->loadData(SampleComplexKeyClass::class, [
                 'key'      => 'key-1',
@@ -253,6 +280,14 @@ class TestLoader extends LoadDataCommand
                 'database' => 'db-2',
                 'value'    => '1.2',
             ]);
+        });*/
+        $this->addLoader('keyless-samples', function () {
+            $this->loadData(SampleKeylessClass::class, [
+                'name' => 'Updated',
+            ], 'Original');
+            $this->loadData(SampleKeylessClass::class, [
+                'name' => 'Stays the Same',
+            ], 'Something Else');
         });
         parent::handle();
     }
@@ -280,4 +315,10 @@ class SampleComplexKeyClass extends Model
 {
     protected $guarded = [];
     protected $table = 'complex_keys';
+}
+
+class SampleKeylessClass extends Model
+{
+    protected $guarded = [];
+    protected $table = 'keyless';
 }
